@@ -93,5 +93,6 @@ namespace kaleidoscope
         std::unique_ptr<Function::Prototype> parse_extern();
         std::unique_ptr<Node> parse_top_level_expression();
         std::unique_ptr<Node> parse_expression();
+        std::unique_ptr<Node> parse_primary();
     };
 }

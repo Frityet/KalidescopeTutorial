@@ -7,7 +7,7 @@ using namespace kaleidoscope;
 
 static void print_ast(const std::unique_ptr<Parser::Node> &ast)
 {
-    if (not ast)
+    if (ast == nullptr)
         return;
     if (auto number = dynamic_cast<Parser::Number *>(ast.get())) {
         std::print("Number: {}\n", number->value.value);
@@ -31,9 +31,9 @@ static void print_ast(const std::unique_ptr<Parser::Node> &ast)
 
 int main()
 {
+    int (&i)[5] = *(int (*)[5])new int[5]();
     auto parser = Parser(Lexer(R"(
-        function add(x y)
-            x + y
+       x + y
     )"));
 
     auto ast = parser.parse();

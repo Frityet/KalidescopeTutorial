@@ -36,6 +36,8 @@ do
 
     add_files("src/**.cpp")
     add_headerfiles("src/**.hpp")
+    --precompile utilities.hpp
+    set_pcxxheader("src/utilities.hpp")
 
     add_includedirs("src/")
 

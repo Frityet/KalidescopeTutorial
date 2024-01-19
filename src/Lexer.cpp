@@ -59,6 +59,6 @@ Lexer::Token Lexer::next()
     if (c == ')')
         return tok(CloseParenthesis());
     if (c == '+' or c == '-' or c == '*' or c == '/' or c == '<' or c == '>' or c == '=')
-        return Token {Operator(c)};
-    return Token {Unknown(c)};
+        return tok(Operator(c));
+    return tok(Unknown(c));
 }

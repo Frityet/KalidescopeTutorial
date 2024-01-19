@@ -52,7 +52,7 @@ std::unique_ptr<Parser::Node> Parser::parse_identifier()
 
 std::unique_ptr<Parser::Node> Parser::parse_expression()
 {
-    auto lhs = parse();
+    auto lhs = parse_primary();
     return parse_binary_operation(0, std::move(lhs));
 }
 
@@ -64,7 +64,7 @@ std::unique_ptr<Parser::BinaryOperation> Parser::parse_binary_operation(int expr
         if (op_prec < expr_prec)
             return std::make_unique<BinaryOperation>(std::move(lhs), op, nullptr);
         next_token();
-        auto rhs = parse();
+        auto rhs = parse_primary();
         if (_current_token.is<Lexer::Operator>()) {
             auto next_op = _current_token.get<Lexer::Operator>();
             auto next_op_prec = OPERATOR_PRECEDENCE.at(next_op);
@@ -79,24 +79,24 @@ std::unique_ptr<Parser::BinaryOperation> Parser::parse_binary_operation(int expr
 std::unique_ptr<Parser::Function::Prototype> Parser::parse_prototype()
 {
     if (not _current_token.is<Lexer::Identifier>())
-        throw std::runtime_error(std::format("Expected function name at line {}", _current_token.line));
+        throw std::runtime_error(std::format("Expected function name at {}:{}", _current_token.line, _current_token.column));
     auto fn_name = _current_token.get<Lexer::Identifier>();
     next_token();
     if (not _current_token.is<Lexer::OpenParenthesis>())
-        throw std::runtime_error(std::format("Expected '(' at line {}", _current_token.line));
+        throw std::runtime_error(std::format("Expected '(' at {}:{}", _current_token.line, _current_token.column));
     next_token();
     std::vector<Lexer::Identifier> args;
     if (not _current_token.is<Lexer::CloseParenthesis>()) {
         while (true) {
             if (not _current_token.is<Lexer::Identifier>())
-                throw std::runtime_error(std::format("Expected identifier at line {}", _current_token.line));
+                throw std::runtime_error(std::format("Expected identifier at {}:{}", _current_token.line, _current_token.column));
 
             args.push_back(_current_token.get<Lexer::Identifier>());
             next_token();
             if (_current_token.is<Lexer::CloseParenthesis>())
                 break;
-            if (not _current_token.is<Lexer::Operator>())
-                throw std::runtime_error(std::format("Expected ')' or ',' at line {}", _current_token.line));
+            // if (not _current_token.is<Lexer::Operator>())
+            //     throw std::runtime_error(std::format("Expected ')' or ',' at {}:{}", _current_token.line, _current_token.column));
             next_token();
         }
     }
@@ -125,26 +125,23 @@ std::unique_ptr<Parser::Node> Parser::parse_top_level_expression()
     return std::make_unique<Function>(std::move(proto), std::move(expr));
 }
 
-std::unique_ptr<Parser::Node> Parser::parse()
+std::unique_ptr<Parser::Node> Parser::parse_primary()
 {
     using NodePtr = std::unique_ptr<Node>;
+    return utilities::match(_current_token) (
+        [this](Lexer::Number) -> NodePtr { return parse_number(); },
+        [this](Lexer::Identifier) -> NodePtr { return parse_identifier(); },
+        [this](Lexer::OpenParenthesis) -> NodePtr { return parse_parenthesised_expression(); },
+        [this](auto) -> NodePtr { throw std::runtime_error(std::format("Unknown token at {}:{}", _current_token.line, _current_token.column)); }
+    );
+}
+
+std::unique_ptr<Parser::Node> Parser::parse()
+{
     return utilities::match(next_token()) (
-        [this](Lexer::Number)           -> NodePtr { return parse_number(); },
-        [this](Lexer::Identifier)       -> NodePtr { return parse_identifier(); },
-        [this](Lexer::OpenParenthesis)  -> NodePtr { return parse_parenthesised_expression(); },
-        [this](Lexer::Extern)           -> NodePtr { return parse_extern(); },
-        [this](Lexer::Function)         -> NodePtr { return parse_function(); },
-        [this](Lexer::Operator op)      -> NodePtr {
-            throw std::runtime_error(std::format("Unexpected operator '{}' at {}:{}", op.value, _current_token.line, _current_token.column));
-        },
-        [this](Lexer::Unknown uk)       -> NodePtr {
-            throw std::runtime_error(std::format("Unexpected token '{}' at {}:{}", uk.value, _current_token.line));
-        },
-        [this](Lexer::InputEnd)         -> NodePtr {
-            throw std::runtime_error(std::format("Unexpected end of input at {}:{}", _current_token.line));
-        },
-        [this](auto)                    -> NodePtr {
-            throw std::runtime_error(std::format("Unexpected and unknown token at {}:{}", _current_token.line));
-        }
+        [this](Lexer::Function) -> std::unique_ptr<Node> { return parse_function(); },
+        [this](Lexer::Extern) -> std::unique_ptr<Node> { return parse_extern(); },
+        [](Lexer::InputEnd) -> std::unique_ptr<Node> { return nullptr; },
+        [this](auto) -> std::unique_ptr<Node> { return parse_top_level_expression(); }
     );
 }
