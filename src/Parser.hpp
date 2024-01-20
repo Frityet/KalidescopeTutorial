@@ -74,6 +74,7 @@ namespace kaleidoscope
         {}
 
         std::unique_ptr<ast::Node> parse();
+        std::vector<std::unique_ptr<ast::Node>> parse_all();
 
     private:
         Lexer _lexer;

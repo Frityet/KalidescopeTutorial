@@ -30,8 +30,9 @@ unique_ptr<ast::Number> Parser::parse_number()
 {
     if (not _current_token.is<token::Number>())
         throw std::runtime_error(std::format("Expected number, got {}", _current_token.to_string()));
+    auto tok = _current_token.get<token::Number>();
     next_token();
-    return make_unique<ast::Number>(_current_token.get<token::Number>());
+    return make_unique<ast::Number>(tok);
 }
 
 unique_ptr<ast::Node> Parser::parse_parenthesised_expression()
@@ -163,6 +164,18 @@ unique_ptr<ast::Node> Parser::parse()
         [this](token::Def)      -> unique_ptr<ast::Node> { return parse_function(); },
         [this](token::Extern)   -> unique_ptr<ast::Node> { return parse_extern(); },
         [this](auto)            -> unique_ptr<ast::Node> { return parse_top_level_expression(); },
+        [this](token::Semicolon)-> unique_ptr<ast::Node> { return parse(); },
         [](token::InputEnd)     -> unique_ptr<ast::Node> { return nullptr; }
     );
+}
+
+std::vector<unique_ptr<ast::Node>> Parser::parse_all()
+{
+    std::vector<unique_ptr<ast::Node>> nodes;
+    while (not _lexer.is_done()) {
+        auto node = parse();
+        if (node != nullptr)
+            nodes.push_back(std::move(node));
+    }
+    return nodes;
 }

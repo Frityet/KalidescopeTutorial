@@ -45,11 +45,13 @@ int main(int argc, const char *argv[])
 {
 
     auto input = argc > 1 ? argv[1] : R"(
-        def add(x, y) x + (y * 2.0)
+        extern sin(x)
+        sin(add(1, 2))
+        def add(x, y)
+            x + (y * 2.0);
     )";
-    auto ast = Parser(Lexer(input)).parse();
-
-    print_ast(ast.get());
+    auto parser = Parser(Lexer(input));
+    auto ast = parser.parse();
 
     return 0;
 }

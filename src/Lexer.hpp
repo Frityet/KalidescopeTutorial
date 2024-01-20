@@ -20,6 +20,7 @@ namespace kaleidoscope
         struct CloseParenthesis:Case<> {};
         struct Operator:        Case<char> {};
         struct Comma:           Case<> {};
+        struct Semicolon:       Case<> {};
         struct Unknown:         Case<char> {};
     }
 
@@ -33,6 +34,7 @@ namespace kaleidoscope
             token::CloseParenthesis,
             token::Operator,
             token::Comma,
+            token::Semicolon,
             token::Unknown
         > {
             size_t line = 0, column = 0;
@@ -51,6 +53,7 @@ namespace kaleidoscope
                     [](CloseParenthesis)-> std::string { return ")"s; },
                     [](Operator op)     -> std::string { return std::format("Operator '{}'", op.value); },
                     [](Comma)           -> std::string { return ","s; },
+                    [](Semicolon)       -> std::string { return ";"s; },
                     [](Unknown unk)     -> std::string { return std::format("Unknown '{}'", unk.value); }
                 ) + std::format(" at {}:{}", line, column);
             }
@@ -66,6 +69,9 @@ namespace kaleidoscope
         Lexer(Lexer &&) = default;
 
         struct Token next();
+        inline bool is_done() const { return _source.empty(); }
+        inline size_t line() const { return _line; }
+        inline size_t column() const { return _column; }
 
     private:
         char next_char(int n = 1);

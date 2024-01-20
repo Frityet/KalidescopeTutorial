@@ -56,13 +56,24 @@ struct Token Lexer::next()
         }
         return tok(Number(std::stod(num)));
     }
-    if (c == '(')
-        return tok(OpenParenthesis());
-    if (c == ')')
-        return tok(CloseParenthesis());
-    if (c == '+' or c == '-' or c == '*' or c == '/' or c == '<' or c == '>' or c == '=')
-        return tok(Operator(c));
-    if (c == ',')
-        return tok(Comma());
+
+    switch (c) {
+        case '(':
+            return tok(OpenParenthesis());
+        case ')':
+            return tok(CloseParenthesis());
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+        case '<':
+        case '>':
+        case '=':
+            return tok(Operator(c));
+        case ',':
+            return tok(Comma());
+        case ';':
+            return tok(Semicolon());
+    }
     return tok(Unknown(c));
 }
