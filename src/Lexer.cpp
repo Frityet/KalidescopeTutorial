@@ -2,16 +2,18 @@
 #include <print>
 
 using namespace kaleidoscope;
+using namespace token;
 
 
 char Lexer::next_char(int i)
 {
+    _previous_char = _to_be_lexed;
     _source.erase(0, i);
     _column += i;
-    return _source.front();
+    return _to_be_lexed = _source.front();
 }
 
-Lexer::Token Lexer::next()
+struct Token Lexer::next()
 {
     auto tok = [this](auto &&...args) {
         return Token { std::forward<decltype(args)>(args)..., _line, _column };
@@ -31,8 +33,8 @@ Lexer::Token Lexer::next()
             id += _source.front();
             next_char();
         }
-        if (id == "function")
-            return tok(Function());
+        if (id == "def")
+            return tok(Def());
         if (id == "extern")
             return tok(Extern());
         return tok(Identifier(id));
@@ -60,5 +62,7 @@ Lexer::Token Lexer::next()
         return tok(CloseParenthesis());
     if (c == '+' or c == '-' or c == '*' or c == '/' or c == '<' or c == '>' or c == '=')
         return tok(Operator(c));
+    if (c == ',')
+        return tok(Comma());
     return tok(Unknown(c));
 }

@@ -7,59 +7,71 @@
 
 namespace kaleidoscope
 {
-    class Lexer {
-    private:
+    namespace token
+    {
         template<typename T = void>
         using Case = utilities::UnionCase<T>;
-    public:
-        struct InputEnd : Case<> {};
-        // def is a stupid function keyword name, just gonna use `function` instead
-        struct Function : Case<> {};
-        struct Extern : Case<> {};
-        struct Identifier : Case<std::string> {};
-        struct Number : Case<double> {};
-        struct OpenParenthesis : Case<> {};
-        struct CloseParenthesis : Case<> {};
-        struct Operator : Case<char> {};
-        struct Unknown : Case<char> {};
-        struct Token : utilities::Union <
-            InputEnd,
-            Function,
-            Extern,
-            Identifier,
-            Number,
-            OpenParenthesis,
-            CloseParenthesis,
-            Operator,
-            Unknown
+        struct InputEnd:        Case<> {};
+        struct Def:             Case<> {};
+        struct Extern:          Case<> {};
+        struct Identifier:      Case<std::string> {};
+        struct Number:          Case<double> {};
+        struct OpenParenthesis: Case<> {};
+        struct CloseParenthesis:Case<> {};
+        struct Operator:        Case<char> {};
+        struct Comma:           Case<> {};
+        struct Unknown:         Case<char> {};
+    }
+
+    struct Token : utilities::Union <
+            token::InputEnd,
+            token::Def,
+            token::Extern,
+            token::Identifier,
+            token::Number,
+            token::OpenParenthesis,
+            token::CloseParenthesis,
+            token::Operator,
+            token::Comma,
+            token::Unknown
         > {
             size_t line = 0, column = 0;
 
             constexpr std::string to_string() const
             {
                 using namespace std::string_literals;
+                using namespace token;
                 return utilities::match(*this) (
-                    [](InputEnd)        -> std::string { return "InputEnd"; },
-                    [](Function)        -> std::string { return "Function"; },
-                    [](Extern)          -> std::string { return "Extern"; },
-                    [](Identifier id)   -> std::string { return std::format("Identifier(\"{}\")", id.value); },
-                    [](Number num)      -> std::string { return std::format("Number({})", num.value); },
-                    [](OpenParenthesis) -> std::string { return "OpenParenthesis"s; },
-                    [](CloseParenthesis)-> std::string { return "CloseParenthesis"s; },
-                    [](Operator op)     -> std::string { return std::format("Operator('{}')", op.value); },
-                    [](Unknown unk)     -> std::string { return std::format("Unknown('{}')", unk.value); }
-                );
+                    [](InputEnd)        -> std::string { return "INPUT_END"; },
+                    [](Def)             -> std::string { return "def"; },
+                    [](Extern)          -> std::string { return "extern"; },
+                    [](Identifier id)   -> std::string { return std::format("Identifier \"{}\"", id.value); },
+                    [](Number num)      -> std::string { return std::format("Number '{}'", num.value); },
+                    [](OpenParenthesis) -> std::string { return "("s; },
+                    [](CloseParenthesis)-> std::string { return ")"s; },
+                    [](Operator op)     -> std::string { return std::format("Operator '{}'", op.value); },
+                    [](Comma)           -> std::string { return ","s; },
+                    [](Unknown unk)     -> std::string { return std::format("Unknown '{}'", unk.value); }
+                ) + std::format(" at {}:{}", line, column);
             }
         };
 
-        Lexer(const std::string &source)
-            : _source(source)
-        {}
+    class Lexer {
+    public:
 
-        Token next();
+        Lexer(const std::string &source):   _source(source) {}
+        Lexer(const char *source):          _source(source) {}
+        Lexer(std::string_view source):     _source(source) {}
+        Lexer(std::string &&source):        _source(std::move(source)) {}
+        Lexer(Lexer &&) = default;
+
+        struct Token next();
 
     private:
         char next_char(int n = 1);
+
+        //for debug
+        char _to_be_lexed, _previous_char;
 
         std::string _source;
         size_t _line = 1, _column = 1;

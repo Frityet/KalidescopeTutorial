@@ -1,4 +1,4 @@
 /.cache
 /.xmake
 /build
-/error
+/compile_commands.json

@@ -23,7 +23,7 @@ local ldflags = {
     regular = {}
 }
 
-set_languages "gnuxxlatest"
+set_languages("gnuxxlatest", "gnulatest")
 
 add_rules("mode.debug", "mode.release")
 
@@ -34,7 +34,7 @@ do
     set_kind("binary")
     add_packages(packages)
 
-    add_files("src/**.cpp")
+    add_files("src/**.cpp", "src/**.c")
     add_headerfiles("src/**.hpp")
     --precompile utilities.hpp
     set_pcxxheader("src/utilities.hpp")

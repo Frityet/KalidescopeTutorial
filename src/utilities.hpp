@@ -1,7 +1,12 @@
 #pragma once
 
 #include <variant>
-
+#include <string>
+#include <vector>
+#include <cxxabi.h>
+#include <memory>
+#include <format>
+#include <print>
 namespace kaleidoscope::utilities
 {
     struct UnionCaseBase {};
@@ -10,7 +15,7 @@ namespace kaleidoscope::utilities
         using type = T;
         T value;
 
-        UnionCase(T value)
+        constexpr UnionCase(T value)
             : value(value)
         {}
 
@@ -23,6 +28,12 @@ namespace kaleidoscope::utilities
         { return static_cast<U>(value); }
 
         constexpr operator T() const
+        { return value; }
+
+        constexpr operator T &()
+        { return value; }
+
+        constexpr operator const T &() const
         { return value; }
     };
 
@@ -82,6 +93,28 @@ namespace kaleidoscope::utilities
         return [&var...]<typename... T>(T &&...matchers) -> decltype(auto) {
             return std::visit(overload{std::forward<T>(matchers)...}, std::forward<Variant>(var)...);
         };
+    }
+
+    static std::string type_name(const std::type_info &ti)
+    {
+        static char tmp_buf[1024] = {0};
+        int status = 0;
+        auto length = sizeof(tmp_buf);
+        abi::__cxa_demangle(ti.name(), tmp_buf, &length, &status);
+        if (status != 0)
+            throw std::runtime_error(std::format("Failed to demangle type name: {}", status));
+        return std::string(tmp_buf, length);
+    }
+
+    template <typename TTo, typename TFrom> requires std::is_base_of_v<TTo, TFrom> or std::is_base_of_v<TFrom, TTo> or std::is_same_v<TTo, TFrom>
+    static constexpr std::unique_ptr<TTo> unique_ptr_cast(std::unique_ptr<TFrom> &&from)
+    {
+        auto fromptr = from.release();
+        auto toptr = dynamic_cast<TTo *>(fromptr);
+        if (toptr == nullptr)
+            throw std::runtime_error(std::format("Failed to cast from {} (claimed to be {}) to {}", type_name(typeid(*fromptr)), type_name(typeid(TFrom)), type_name(typeid(TTo))));
+
+        return std::unique_ptr<TTo>(toptr);
     }
 
     #define $CASE_IMPL(...) { return __VA_ARGS__; }

@@ -1,16 +1,21 @@
 [
 {
   "directory": "/Users/frityet/Documents/KalidescopeTutorial",
-  "arguments": ["/usr/local/opt/llvm/bin/clang", "-c", "-Qunused-arguments", "-m64", "-g", "-O0", "-std=gnu++23", "-Isrc", "-DPROJECT_DEBUG", "-Wall", "-Wextra", "-Werror", "-stdlib=libc++", "-Wno-c99-designator", "-Wno-unused-function", "-Wno-unused-parameter", "-Wno-unused-variable", "-fsanitize=address", "-fsanitize=leak", "-fsanitize=undefined", "-o", "build/.objs/kalidescope/macosx/x86_64/debug/src/Lexer.cpp.o", "src/Lexer.cpp"],
+  "arguments": ["/usr/local/opt/llvm/bin/clang", "-c", "-Qunused-arguments", "-m64", "-g", "-O0", "-std=gnu++23", "-Isrc", "-DPROJECT_DEBUG", "-include", "src/utilities.hpp", "-include-pch", "build/.objs/kalidescope/macosx/x86_64/debug/src/cxx/utilities.hpp.pch", "-Wall", "-Wextra", "-Werror", "-stdlib=libc++", "-Wno-c99-designator", "-Wno-unused-function", "-Wno-unused-parameter", "-Wno-unused-variable", "-fsanitize=address", "-fsanitize=leak", "-fsanitize=undefined", "-o", "build/.objs/kalidescope/macosx/x86_64/debug/src/Lexer.cpp.o", "src/Lexer.cpp"],
   "file": "src/Lexer.cpp"
 },
 {
   "directory": "/Users/frityet/Documents/KalidescopeTutorial",
-  "arguments": ["/usr/local/opt/llvm/bin/clang", "-c", "-Qunused-arguments", "-m64", "-g", "-O0", "-std=gnu++23", "-Isrc", "-DPROJECT_DEBUG", "-Wall", "-Wextra", "-Werror", "-stdlib=libc++", "-Wno-c99-designator", "-Wno-unused-function", "-Wno-unused-parameter", "-Wno-unused-variable", "-fsanitize=address", "-fsanitize=leak", "-fsanitize=undefined", "-o", "build/.objs/kalidescope/macosx/x86_64/debug/src/Parser.cpp.o", "src/Parser.cpp"],
+  "arguments": ["/usr/local/opt/llvm/bin/clang", "-c", "-Qunused-arguments", "-m64", "-g", "-O0", "-std=gnu++23", "-Isrc", "-DPROJECT_DEBUG", "-include", "src/utilities.hpp", "-include-pch", "build/.objs/kalidescope/macosx/x86_64/debug/src/cxx/utilities.hpp.pch", "-Wall", "-Wextra", "-Werror", "-stdlib=libc++", "-Wno-c99-designator", "-Wno-unused-function", "-Wno-unused-parameter", "-Wno-unused-variable", "-fsanitize=address", "-fsanitize=leak", "-fsanitize=undefined", "-o", "build/.objs/kalidescope/macosx/x86_64/debug/src/Parser.cpp.o", "src/Parser.cpp"],
   "file": "src/Parser.cpp"
 },
 {
   "directory": "/Users/frityet/Documents/KalidescopeTutorial",
-  "arguments": ["/usr/local/opt/llvm/bin/clang", "-c", "-Qunused-arguments", "-m64", "-g", "-O0", "-std=gnu++23", "-Isrc", "-DPROJECT_DEBUG", "-Wall", "-Wextra", "-Werror", "-stdlib=libc++", "-Wno-c99-designator", "-Wno-unused-function", "-Wno-unused-parameter", "-Wno-unused-variable", "-fsanitize=address", "-fsanitize=leak", "-fsanitize=undefined", "-o", "build/.objs/kalidescope/macosx/x86_64/debug/src/main.cpp.o", "src/main.cpp"],
+  "arguments": ["/usr/local/opt/llvm/bin/clang", "-c", "-Qunused-arguments", "-m64", "-g", "-O0", "-std=gnu++23", "-Isrc", "-DPROJECT_DEBUG", "-include", "src/utilities.hpp", "-include-pch", "build/.objs/kalidescope/macosx/x86_64/debug/src/cxx/utilities.hpp.pch", "-Wall", "-Wextra", "-Werror", "-stdlib=libc++", "-Wno-c99-designator", "-Wno-unused-function", "-Wno-unused-parameter", "-Wno-unused-variable", "-fsanitize=address", "-fsanitize=leak", "-fsanitize=undefined", "-o", "build/.objs/kalidescope/macosx/x86_64/debug/src/main.cpp.o", "src/main.cpp"],
   "file": "src/main.cpp"
+},
+{
+  "directory": "/Users/frityet/Documents/KalidescopeTutorial",
+  "arguments": ["/usr/local/opt/llvm/bin/clang", "-c", "-Qunused-arguments", "-m64", "-g", "-O0", "-std=c2x", "-Isrc", "-DPROJECT_DEBUG", "-fsanitize=address", "-fsanitize=leak", "-fsanitize=undefined", "-o", "build/.objs/kalidescope/macosx/x86_64/debug/src/coro.c.o", "src/coro.c"],
+  "file": "src/coro.c"
 }]

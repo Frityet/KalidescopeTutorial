@@ -4,95 +4,95 @@
 
 namespace kaleidoscope
 {
-    class Parser {
-    public:
+    namespace ast
+    {
         class Node {
         public:
-            // virtual void parse(Lexer::Token token) = 0;
             virtual ~Node() = default;
         };
 
         class Number : public Node {
         public:
-            Lexer::Number value;
+            token::Number value;
 
-            Number(Lexer::Number value)
-                : value(value)
+            Number(token::Number value) : value(value)
             {}
         };
 
         class Identifier : public Node {
         public:
-            Lexer::Identifier name;
+            token::Identifier name;
 
-            Identifier(Lexer::Identifier name)
-                : name(name)
+            Identifier(token::Identifier name) : name(name)
             {}
         };
 
         class BinaryOperation : public Node {
         public:
-            Lexer::Operator operation;
-            std::unique_ptr<Node> lhs, rhs;
+            token::Operator operation;
+            std::unique_ptr<Node> left_hand_side, right_hand_side;
 
-            BinaryOperation( std::unique_ptr<Node> lhs, Lexer::Operator op, std::unique_ptr<Node> rhs)
-                : operation(op), lhs(std::move(lhs)), rhs(std::move(rhs))
+            BinaryOperation( std::unique_ptr<Node> &&left_hand_side, token::Operator operation, std::unique_ptr<Node> &&right_hand_side)
+                : operation(operation), left_hand_side(std::move(left_hand_side)), right_hand_side(std::move(right_hand_side))
             {}
         };
 
         class Function : public Node {
         public:
-            class Prototype : public Node {
+            class Call : public Node {
             public:
-                Lexer::Identifier name;
-                std::vector<Lexer::Identifier> argument_names;
+                token::Identifier callee;
+                std::vector<std::unique_ptr<Node>> arguments;
 
-                Prototype(std::string name, std::vector<Lexer::Identifier> args)
-                    : name(name), argument_names(std::move(args))
+                Call(token::Identifier callee, std::vector<std::unique_ptr<Node>> arguments)
+                    : callee(callee), arguments(std::move(arguments))
                 {}
             };
 
-            class Call : public Node {
+            class Prototype : public Node {
             public:
-                std::unique_ptr<Identifier> callee;
-                std::vector<std::unique_ptr<Node>> arguments;
+                token::Identifier name;
+                std::vector<token::Identifier> arguments;
 
-                Call(Lexer::Identifier callee, std::vector<std::unique_ptr<Node>> &&args)
-                    : callee(std::make_unique<Identifier>(Identifier {callee})), arguments(std::move(args))
-                {}
-
-                Call(std::unique_ptr<Identifier> callee, std::vector<std::unique_ptr<Node>> &&args)
-                    : callee(std::move(callee)), arguments(std::move(args))
+                Prototype(token::Identifier name, std::vector<token::Identifier> arguments)
+                    : name(name), arguments(std::move(arguments))
                 {}
             };
 
             std::unique_ptr<Prototype> prototype;
             std::unique_ptr<Node> body;
 
-            Function(std::unique_ptr<Prototype> prototype, std::unique_ptr<Node> body)
+            Function(std::unique_ptr<Prototype> &&prototype, std::unique_ptr<Node> &&body)
                 : prototype(std::move(prototype)), body(std::move(body))
             {}
         };
+    }
 
-        Parser(Lexer lexer)
-            : _lexer(lexer)
+    class Parser {
+    public:
+        Parser(Lexer &&lexer) : _lexer(std::move(lexer))
         {}
 
-        std::unique_ptr<Node> parse();
+        std::unique_ptr<ast::Node> parse();
+
     private:
         Lexer _lexer;
-        Lexer::Token _current_token;
-        inline Lexer::Token &next_token()
+        Token _current_token;
+
+        inline const Token &next_token()
         { return _current_token = _lexer.next(); }
-        std::unique_ptr<Number> parse_number();
-        std::unique_ptr<Node> parse_identifier();
-        std::unique_ptr<Node> parse_parenthesised_expression();
-        std::unique_ptr<BinaryOperation> parse_binary_operation(int expr_prec, std::unique_ptr<Node> lhs);
-        std::unique_ptr<Function::Prototype> parse_prototype();
-        std::unique_ptr<Function> parse_function();
-        std::unique_ptr<Function::Prototype> parse_extern();
-        std::unique_ptr<Node> parse_top_level_expression();
-        std::unique_ptr<Node> parse_expression();
-        std::unique_ptr<Node> parse_primary();
+
+        std::unique_ptr<ast::Number> parse_number();
+        //also parses function calls, so the real return type is std::unique_ptr<ast::Identifier | ast::Function::Call>
+        std::unique_ptr<ast::Node> parse_identifier();
+        std::unique_ptr<ast::Node> parse_parenthesised_expression();
+        std::unique_ptr<ast::Node> parse_primary();
+        std::unique_ptr<ast::Node> parse_expression();
+        std::unique_ptr<ast::Node> parse_binary_operator(int precedence, std::unique_ptr<ast::Node> &&lhs);
+        std::unique_ptr<ast::Node> parse_top_level_expression();
+
+        std::unique_ptr<ast::Function::Prototype> parse_prototype();
+        std::unique_ptr<ast::Function> parse_function();
+        std::unique_ptr<ast::Function::Prototype> parse_extern();
     };
 }

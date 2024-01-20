@@ -5,39 +5,51 @@
 
 using namespace kaleidoscope;
 
-static void print_ast(const std::unique_ptr<Parser::Node> &ast)
+static void print_ast(ast::Node *ast, int indent = 0)
 {
     if (ast == nullptr)
         return;
-    if (auto number = dynamic_cast<Parser::Number *>(ast.get())) {
-        std::print("Number: {}\n", number->value.value);
-    } else if (auto identifier = dynamic_cast<Parser::Identifier *>(ast.get())) {
-        std::print("Identifier: {}\n", identifier->name.value);
-    } else if (auto binary_operation = dynamic_cast<Parser::BinaryOperation *>(ast.get())) {
-        std::print("BinaryOperation: {}\n", binary_operation->operation.value);
-        print_ast(binary_operation->lhs);
-        print_ast(binary_operation->rhs);
-    } else if (auto function = dynamic_cast<Parser::Function *>(ast.get())) {
-        std::print("Function: {}\n", function->prototype->name.value);
-        for (auto &arg : function->prototype->argument_names)
-            std::print("  Argument: {}\n", arg.value);
-        print_ast(function->body);
-    } else if (auto function_call = dynamic_cast<Parser::Function::Call *>(ast.get())) {
-        std::print("FunctionCall: {}\n", function_call->callee->name.value);
-        for (auto &arg : function_call->arguments)
-            print_ast(arg);
+    auto print_indent = [indent]() {
+        for (int i = 0; i < indent; ++i)
+            std::print("  ");
+    };
+
+    print_indent();
+
+    if (auto num = dynamic_cast<ast::Number *>(ast)) {
+        std::print("Number {}\n", num->value.value);
+    } else if (auto id = dynamic_cast<ast::Identifier *>(ast)) {
+        std::print("Identifier {}\n", id->name.value);
+    } else if (auto binop = dynamic_cast<ast::BinaryOperation *>(ast)) {
+        std::print("BinaryOperation {}\n", binop->operation.value);
+        print_ast(binop->left_hand_side.get(), indent + 1);
+        print_ast(binop->right_hand_side.get(), indent + 1);
+    } else if (auto call = dynamic_cast<ast::Function::Call *>(ast)) {
+        std::print("Call {}\n", call->callee.value);
+        for (auto &&arg : call->arguments)
+            print_ast(arg.get(), indent + 1);
+    } else if (auto proto = dynamic_cast<ast::Function::Prototype *>(ast)) {
+        std::print("Prototype {}:\n", proto->name.value);
+        for (auto &&arg : proto->arguments)
+            std::print("    - {}\n", arg.value);
+    } else if (auto func = dynamic_cast<ast::Function *>(ast)) {
+        std::print("Function\n");
+        print_ast(func->prototype.get(), indent + 1);
+        print_ast(func->body.get(), indent + 1);
+    } else {
+        std::print("Unknown\n");
     }
 }
 
-int main()
+int main(int argc, const char *argv[])
 {
-    int (&i)[5] = *(int (*)[5])new int[5]();
-    auto parser = Parser(Lexer(R"(
-       x + y
-    )"));
 
-    auto ast = parser.parse();
-    print_ast(ast);
+    auto input = argc > 1 ? argv[1] : R"(
+        def add(x, y) x + (y * 2.0)
+    )";
+    auto ast = Parser(Lexer(input)).parse();
+
+    print_ast(ast.get());
 
     return 0;
 }
